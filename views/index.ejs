@@ -1,0 +1,39 @@
+<html>
+    <title><%= channel %></title>
+    <style>
+        * { padding: 0; margin: 0; }
+    </style>
+    <body>
+        <!-- Add a placeholder for the Twitch embed -->
+        <div id="twitch-embed"></div>
+
+        <!-- Load the Twitch embed script -->
+        <script src="https://embed.twitch.tv/embed/v1.js"></script>
+
+        <!-- Create a Twitch.Embed object that will render within the "twitch-embed" root element. -->
+        <script type="text/javascript">
+            var twitchEmbed = new Twitch.Embed("twitch-embed", {
+                channel: "<%= channel %>",
+                layout: "<%= chat ? 'video-chat' : 'video' %>",
+                height: "100%",
+                width: "100%",
+            });
+
+            const ws = new WebSocket("ws://" + window.location.host + "/listen");
+            ws.addEventListener("open", (event) => { console.log("open", event);  });
+            ws.addEventListener("close", (event) => { console.error("Live Watch has terminated"); });
+            ws.addEventListener("message", (event) => { 
+                console.log("New Channel");
+                twitchEmbed.setChannel(event.data);
+                document.querySelector("title").text = event.data;
+                
+            });
+            function abort() { ws.close(); }
+        </script>
+        
+		<!-- Live Updating -->
+		<script>
+	
+		</script>
+    </body>
+</html>
