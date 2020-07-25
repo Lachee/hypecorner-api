@@ -19,7 +19,8 @@
                 width: "100%",
             });
 
-            const ws = new WebSocket("ws://" + window.location.host + "/listen");
+            var protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const ws = new WebSocket(protocol + "//" + window.location.host + "/listen");
             ws.addEventListener("open", (event) => { console.log("open", event);  });
             ws.addEventListener("close", (event) => { console.error("Live Watch has terminated"); });
             ws.addEventListener("message", (event) => { 
