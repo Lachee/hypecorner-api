@@ -20,9 +20,16 @@
             });
 
             var protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const ws = new WebSocket(protocol + "//" + window.location.host + "/listen");
+            var host = protocol + "//" + window.location.host + "/listen";
+
+            //Connect first time and create events
+            var ws = new WebSocket(host);
             ws.addEventListener("open", (event) => { console.log("open", event);  });
-            ws.addEventListener("close", (event) => { console.error("Live Watch has terminated", event); });
+            ws.addEventListener("close", (event) => { 
+                //Reconnect
+                console.warning("Live Watch has terminated", event); 
+                ws = new WebSocket(host);
+            });
             ws.addEventListener("message", (event) => { 
                 console.log("New Channel");
                 twitchEmbed.setChannel(event.data);
