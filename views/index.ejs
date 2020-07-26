@@ -22,6 +22,7 @@
             var protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
             var host = protocol + "//" + window.location.host + "/listen";
      
+            connect(host);
             function connect(host) {
                 
                 //Connect and listen to events
