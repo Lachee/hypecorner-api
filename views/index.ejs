@@ -26,8 +26,9 @@
             var ws = new WebSocket(host);
             ws.addEventListener("open", (event) => { console.log("open", event);  });
             ws.addEventListener("close", (event) => { 
+                
                 //Reconnect
-                console.warning("Live Watch has terminated", event); 
+                console.warn("Live Watch has terminated", event); 
                 ws = new WebSocket(host);
             });
             ws.addEventListener("message", (event) => { 
