@@ -101,7 +101,7 @@ app.get("/api/blacklist/:name", (req, res, next) => {
     res.send({ name: name, reason: blacklist[name] });
 });
 //Gets a list of blacklisted channels
-app.get("/api/blacklist", basicAuth({ users }), (req, res, next) => {                                 //Return the entire blacklist
+app.get("/api/blacklist", (req, res, next) => {                                 //Return the entire blacklist
     res.send(blacklist);
 });
 
