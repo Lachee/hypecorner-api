@@ -1,0 +1,93 @@
+<html>
+    <title>HypeCorner Blacklist</title>
+    <style>
+        * { 
+            padding: 0; 
+            margin: 0; 
+            font-family: sans-serif;
+        }
+        .panel {
+            width: 500px;
+            margin: auto;
+            padding: 10px;
+            background: #06060a;
+            border-radius: 10px;
+        }
+
+        .wrapper {
+            padding: 10px;
+            /* min-height: 0%; */
+        }
+
+        .notice {
+            margin: 10px auto;
+            background: #ffeeaf;
+            color: #af5f0d;
+            padding: 10px;
+            border-radius: 10px;
+            width: 500px;
+        }
+        .notice.notice-title {
+            background: #a7a7ff;
+            color: #13001b;
+        }
+        body {
+            background: #171717;
+            color: #d2d2d2;
+        }
+
+        table#blacklist {
+            width: 100%;
+        }
+
+        #blacklist a {
+            color: #a879ff;
+            font-weight: bold;
+        }
+
+        #blacklist th {
+            color: white;
+        }
+
+        #blacklist td {
+            padding: 4px;
+        }
+
+        #blacklist tr:nth-child(even) {
+            background: #ffffff12;
+        }
+        a#return {
+            color: white;
+            text-transform: UPPERCASE;
+            text-decoration: none;
+        }
+    </style>
+    <body>
+        <div class="wrapper">
+            <a href="/" id="return">[ back to stream ]</a>
+            <div class="notice notice-title">
+                HypeCore Blacklist is a list of streamers that will be excluded from its playlist. The reason for exclusions vary, but in general it is to avoid toxic members of the Siege community and bad sportsmanship.
+            </div>
+            <div class="panel">
+                <table id="blacklist">
+                    <tr>
+                        <th>Twitch Name</th>
+                        <th>Reason</th>
+                    </tr>
+                    <% for (var name in blacklist) { %>
+                        <tr>
+                            <td><a href="https://twitch.tv/<%= name %>"><%= name %></a></td>
+                            <td><%= blacklist[name] %></td>
+                        </tr>    
+                    <% } %>
+                </table>
+            </div>
+            <div class="notice">
+                If you wish to appeal your blacklisting from the HypeCorner, please contact Lachee. 
+            </div>
+            <div class="notice">
+                If you wish to be blacklisted to avoid visits from the HypeCorner, please contact Lachee.
+            </div>
+        </div>
+    </body>
+</html>

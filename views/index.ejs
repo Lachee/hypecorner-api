@@ -1,5 +1,5 @@
 <html>
-    <title><%= channel %></title>
+    <title>HypeCorner Embed Player</title>
     <style>
         * { padding: 0; margin: 0; }
     </style>
@@ -41,8 +41,7 @@
                 ws.addEventListener("message", (event) => { 
                     console.log("New Channel");
                     twitchEmbed.setChannel(event.data);
-                    document.querySelector("title").text = event.data;
-                    
+                    //document.querySelector("title").text = event.data;
                 });
             }
         </script>
