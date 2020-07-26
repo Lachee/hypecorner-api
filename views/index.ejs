@@ -21,23 +21,29 @@
 
             var protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
             var host = protocol + "//" + window.location.host + "/listen";
+     
+            function connect(host) {
+                
+                //Connect and listen to events
+                var ws = new WebSocket(host);
 
-            //Connect first time and create events
-            var ws = new WebSocket(host);
-            ws.addEventListener("open", (event) => { console.log("open", event);  });
-            ws.addEventListener("close", (event) => { 
+                //We opened
+                ws.addEventListener("open", (event) => { console.log("open", event);  });
+
+                //We closed, reconnect
+                ws.addEventListener("close", (event) => { 
+                    console.warn("Live Watch has terminated", event); 
+                    connect(host);
+                });
                 
-                //Reconnect
-                console.warn("Live Watch has terminated", event); 
-                ws = new WebSocket(host);
-            });
-            ws.addEventListener("message", (event) => { 
-                console.log("New Channel");
-                twitchEmbed.setChannel(event.data);
-                document.querySelector("title").text = event.data;
-                
-            });
-            function abort() { ws.close(); }
+                //New Channel
+                ws.addEventListener("message", (event) => { 
+                    console.log("New Channel");
+                    twitchEmbed.setChannel(event.data);
+                    document.querySelector("title").text = event.data;
+                    
+                });
+            }
         </script>
         
 		<!-- Live Updating -->
