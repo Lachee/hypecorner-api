@@ -42,6 +42,20 @@ fs.readFile(blacklistFile, (err, data) => {
 
 console.log("Starting");
 
+// setChannel changes what everyone is watching.
+function setChannel(name) {
+    console.log("Now hosting", currentChannel);
+
+    //Set the name
+    currentChannel = name;
+
+    //Tell every single connection the new channel name
+    var wss = expressWs.getWss('/');
+    wss.clients.forEach(function (client) {
+        client.send(currentChannel);
+    });
+}
+
 //Listen to websocket connections. We dont care what they send really.
 app.ws('/listen', function(ws, req) {
     ws.on('message', function(msg) {
@@ -54,14 +68,7 @@ app.ws('/listen', function(ws, req) {
 //When someone posts to the channel name, then we will update the list.
 app.post("/api/channel/:name", basicAuth({ users }), (req, res, next) => {
     //Update the post
-    currentChannel = req.params.name;
-    console.log("Now hosting", currentChannel);
-
-    //Tell every single connection the new channel name
-    var wss = expressWs.getWss('/');
-    wss.clients.forEach(function (client) {
-        client.send(currentChannel);
-    });
+    setChannel(req.params.name);
 
     //Return the new channel
     res.send({ name: currentChannel });
@@ -80,8 +87,17 @@ app.post("/api/blacklist/:name", basicAuth({ users }), (req, res, next) => {
     if (reason == '') throw new Error("Reason cannot be empty");
     if (name == '') throw new Error("Name cannot be empty");
 
+    //Set the blacklist
     blacklist[name] = reason;                                               //Add the blacklist anad write
     fs.writeFileSync(blacklistFile, JSON.stringify(blacklist));
+
+    // If we have blacklisted someone, lets just return to a default
+    if (currentChannel == name) {
+        console.warn("Black listed current player! Not sure who to run next, so just doing default.");
+        setChannel("monstercat");
+    }
+
+    //Return the response
     res.send({ name: name, reason: reason });
 });
 //Remove someone to the blacklist
