@@ -23,11 +23,14 @@
                 height: 0%;
                 width: 100%;
             }
+            #volume-slider {
+                display: none;
+            }
 
         </style>
     </head>
     <body>
-
+        <input id="volume-slider" type="range" min="0", max="1" step="0.001"></slider>
         <div class="transition-container from-top">
             <span class="tile"></span>
             <span class="tile"></span>
@@ -43,17 +46,20 @@
 
         <!-- Create a Twitch.Embed object that will render within the "twitch-embed" root element. -->
         <script type="text/javascript">
+            const volumeSlider = document.getElementById("volume-slider");
+            
+            var originalVolume = 0;
             var twitchChannel = "<%= channel %>";
-            var twitchEmbed = new Twitch.Embed("twitch-embed", {
+            const twitchEmbed = new Twitch.Embed("twitch-embed", {
                 channel: twitchChannel,
                 layout: "<%= chat ? 'video-chat' : 'video' %>",
                 height: "100%",
                 width: "100%",
             });
-
-            var protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-            var host = protocol + "//" + window.location.host + "/api/gateway";
-     
+            
+            //Connection protocol
+            const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const host = protocol + "//" + window.location.host + "/api/gateway";
             connect(host);
      
             /** Changes the twitch channel */
@@ -126,12 +132,25 @@
             /** Rolls the stinger in */
             function stingerIn(done = null) {
                 let tl = gsap.timeline({ ease: "power4.inOut" });
+                volumeSlider.value = originalVolume = twitchEmbed.getVolume();
+
+                //Slide the stuff
                 tl.to(".from-top .tile", {
                     duration: 0.4,
                     height: "100%",
                     top: "0%",
                     delay: 0.2,
                     stagger: 0.05,
+                });
+
+                //Hide the audio
+                tl.to("#volume-slider", {
+                    duration: 0.4,
+                    value: 0,
+                    onUpdate: () => {                         
+                        let val = parseFloat(volumeSlider.value);
+                        twitchEmbed.setVolume(val);
+                    }
                 });
 
                 //TODO: Turn this async
@@ -142,7 +161,18 @@
             /** Rolls the stinger out */
             function stingerOut(done = null) {                
                 let tl = gsap.timeline({ ease: "power4.inOut" });
- 
+
+                //Play back the audio
+                tl.to("#volume-slider", {
+                    duration: 0.4,
+                    value: originalVolume,
+                    onUpdate: () => {                         
+                        let val = parseFloat(volumeSlider.value);
+                        twitchEmbed.setVolume(val);
+                    }
+                });
+
+
                 tl.to(".from-top .tile", {
                     duration: 0.4,
                     height: "100%",
