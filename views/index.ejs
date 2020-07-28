@@ -12,8 +12,9 @@
 
         <!-- Create a Twitch.Embed object that will render within the "twitch-embed" root element. -->
         <script type="text/javascript">
+            var twitchChannel = "<%= channel %>";
             var twitchEmbed = new Twitch.Embed("twitch-embed", {
-                channel: "<%= channel %>",
+                channel: twitchChannel,
                 layout: "<%= chat ? 'video-chat' : 'video' %>",
                 height: "100%",
                 width: "100%",
@@ -29,7 +30,13 @@
                 var ws = new WebSocket(host);
 
                 //We opened
-                ws.addEventListener("open", (event) => { console.log("open", event);  });
+                ws.addEventListener("open", (event) => { 
+                    console.log("open", event);
+                    fetch('/api/channel').then(async (data) => {
+                        var result = data.json();
+                        updateChannel(result.name);
+                    });
+                });
 
                 //We closed, reconnect
                 ws.addEventListener("close", (event) => { 
@@ -39,10 +46,16 @@
                 
                 //New Channel
                 ws.addEventListener("message", (event) => { 
-                    console.log("New Channel");
-                    twitchEmbed.setChannel(event.data);
-                    //document.querySelector("title").text = event.data;
+                    updateChannel(event.data);
                 });
+            }
+
+            function updateChannel(name) {
+                if (name != twitchChannel) {
+                    console.log("New Channel", name);
+                    twitchChannel = name;                
+                    twitchEmbed.setChannel(twitchChannel);
+                }
             }
         </script>
         
