@@ -74,7 +74,7 @@ function broadcast(event, payload = null) {
 }
 
 //Listen to websocket connections. We dont care what they send really.
-app.ws('/listen', function(ws, req) {
+app.ws('/api/gateway', function(ws, req) {
     ws.on('message', function(msg) {
         console.log("msg from WS client", msg);
     });

@@ -21,7 +21,7 @@
             });
 
             var protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-            var host = protocol + "//" + window.location.host + "/listen";
+            var host = protocol + "//" + window.location.host + "/api/gateway";
      
             connect(host);
      
