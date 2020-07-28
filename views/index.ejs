@@ -24,17 +24,38 @@
             var host = protocol + "//" + window.location.host + "/listen";
      
             connect(host);
+     
+            /** Changes the twitch channel */
+            function changeChannel(name) {
+                if (name != twitchChannel) {
+                    console.log("New Channel", name);
+                    twitchChannel = name;                
+                    twitchEmbed.setChannel(twitchChannel);
+                }
+            }
+            
+            /** Shows the preroll */
+            function preroll(duration = 1000) {
+                console.log("Preroll Shown!");
+            }
+
+            /** Sets the score display */
+            function score(scores) {
+                console.log("Scores!", scores);
+            }
+
+            /** Connect handles the WebSockets */
             function connect(host) {
                 
                 //Connect and listen to events
                 var ws = new WebSocket(host);
 
-                //We opened
+                //We have opened, so change the initial channel
                 ws.addEventListener("open", (event) => { 
                     console.log("open", event);
                     fetch('/api/channel').then(async (data) => {
-                        var result = data.json();
-                        updateChannel(result.name);
+                        var result = await data.json();
+                        changeChannel(result.name);
                     });
                 });
 
@@ -44,19 +65,25 @@
                     connect(host);
                 });
                 
-                //New Channel
+                //We have an event, so lets parse
                 ws.addEventListener("message", (event) => { 
-                    updateChannel(event.data);
+                    var payload = JSON.parse(event.data);
+                    console.log("WS EVENT", payload.e, payload.d);
+                    switch(payload.e) {
+                        default: break;
+                        case 'ORCHESTRA_CHANGE':
+                            changeChannel(payload.d.name);
+                            break;
+                        case 'ORCHESTRA_PREROLL':
+                            preroll(payload.d.duration);
+                            break;
+                        case 'ORCHESTRA_SCORE':
+                            score(payload.d);
+                            break;
+                    }
                 });
             }
 
-            function updateChannel(name) {
-                if (name != twitchChannel) {
-                    console.log("New Channel", name);
-                    twitchChannel = name;                
-                    twitchEmbed.setChannel(twitchChannel);
-                }
-            }
         </script>
         
 		<!-- Live Updating -->

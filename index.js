@@ -9,6 +9,7 @@ var express = require("express");
 var app = express();
 var expressWs = require('express-ws')(app);
 var basicAuth = require('express-basic-auth');
+const { stringify } = require('querystring');
 app.set('view engine', 'ejs');
 app.use(express.json());
 
@@ -42,18 +43,33 @@ fs.readFile(blacklistFile, (err, data) => {
 
 console.log("Starting");
 
+const EVENT_ORCHESTRA_SKIP      = 'ORCHESTRA_SKIP';     //Sent to tell the OCR that we wish to skip this nonsense and please find us a new channel.
+const EVENT_ORCHESTRA_PREROLL   = 'ORCHESTRA_PREROLL';  //Sent to tell the embed client and OBS clients to run a preroll for a specified duration as we are about to change.
+const EVENT_ORCHESTRA_CHANGE    = 'ORCHESTRA_CHANGE';   //Sent to tell the embed clients to switch channel
+const EVENT_ORCHESTRA_SCORE     = 'ORCHESTRA_SCORE';    //Sent every now and again to tell the users what we think the score is. More a reminder to stay connected.
+const EVENT_BLACKLIST_ADD       = 'BLACKLIST_ADDED';    //Invoked when a user is added to the blacklist
+const EVENT_BLACKLIST_REMOVE    = 'BLACKLIST_REMOVED';  //Invoked when a user is removed from the blacklist
+
 // setChannel changes what everyone is watching.
 function setChannel(name) {
     console.log("Now hosting", currentChannel);
 
     //Set the name
     currentChannel = name;
+    broadcast(EVENT_ORCHESTRA_CHANGE, { name: currentChannel });
+}
+
+// broadcast sends a message to every websocket connection
+function broadcast(event, payload = null) {
+    //Prepare the payload
+    var json = JSON.stringify({
+        e: event.toUpperCase(),
+        d: payload
+    });
 
     //Tell every single connection the new channel name
     var wss = expressWs.getWss('/');
-    wss.clients.forEach(function (client) {
-        client.send(currentChannel);
-    });
+    wss.clients.forEach((client) => client.send(json));
 }
 
 //Listen to websocket connections. We dont care what they send really.
@@ -79,6 +95,24 @@ app.get("/api/channel", (req, res, next) => {
     res.send({ name: currentChannel });
 });
 
+// Tells the OCR to skip the current locked on subject
+app.post("/api/orchestra/skip", basicAuth({users}), (req, res, next) => {
+    broadcast(EVENT_ORCHESTRA_SKIP);
+    res.send(true);
+});
+// Tells the clients that we are about to change and you should do the preroll
+app.post("/api/orchestra/preroll", basicAuth({users}), (req, res, next) => {
+    broadcast(EVENT_ORCHESTRA_PREROLL, { duration: req.body.duration || 0 });
+    res.send(true);
+});
+// Reminds all the clients that we still exist and the users current score.
+app.post("/api/orchestra/score", basicAuth({users}), (req, res, next) => {
+    var left = req.body.left || -1;
+    var right = req.body.right || -1;
+    broadcast(EVENT_ORCHESTRA_SCORE, [ left, right ]);
+    res.send(true);
+});
+
 /////////////////// BLACKLIST
 //Adds someone to the blacklist
 app.post("/api/blacklist/:name", basicAuth({ users }), (req, res, next) => {
@@ -94,28 +128,34 @@ app.post("/api/blacklist/:name", basicAuth({ users }), (req, res, next) => {
     // If we have blacklisted someone, lets just return to a default
     if (currentChannel == name) {
         console.warn("Black listed current player! Not sure who to run next, so just doing default.");
-        setChannel("monstercat");
+        broadcast(EVENT_ORCHESTRA_SKIP);
     }
 
-    //Return the response
+    //Tell everyone there is a new blacklist
+    broadcast(EVENT_BLACKLIST_ADD, { name: name, reason: reason });
     res.send({ name: name, reason: reason });
 });
+
 //Remove someone to the blacklist
 app.delete("/api/blacklist/:name", basicAuth({ users }), (req, res, next) => {
     var name = req.params.name;                                             //Validate the name
     if (!blacklist[name]) throw new Error("Name is not in the blacklist");
 
-    delete blacklist[name];                                                 //Remove the blacklist
+    delete blacklist[name];                                                 //Remove the blacklist    
+    fs.writeFileSync(blacklistFile, JSON.stringify(blacklist));             //Write the blacklist
     
-    fs.writeFileSync(blacklistFile, JSON.stringify(blacklist));          //Write the blacklist
+    //Tell everyone there is a new blacklist
+    broadcast(EVENT_BLACKLIST_REMOVE, { name: name });
     res.send({ name: name });
 });
+
 //Gets the reason someone is blacklisted
 app.get("/api/blacklist/:name", (req, res, next) => {
     var name = req.params.name;                                             //Return the blacklist item
     if (!blacklist[name]) throw new Error("Name is not in the blacklist");
     res.send({ name: name, reason: blacklist[name] });
 });
+
 //Gets a list of blacklisted channels
 app.get("/api/blacklist", (req, res, next) => {                                 //Return the entire blacklist
     res.send(blacklist);
