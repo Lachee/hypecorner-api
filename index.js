@@ -104,14 +104,14 @@ app.post("/api/orchestra/skip", basicAuth({users}), (req, res, next) => {
 });
 // Tells the clients that we are about to change and you should do the preroll
 app.post("/api/orchestra/preroll", basicAuth({users}), (req, res, next) => {
-    let payload = broadcast(EVENT_ORCHESTRA_PREROLL, { name: req.body.name || 0 });
+    let payload = broadcast(EVENT_ORCHESTRA_PREROLL, { name: req.body.name || '' });
     res.send(payload);
 });
 // Reminds all the clients that we still exist and the users current score.
 app.post("/api/orchestra/score", basicAuth({users}), (req, res, next) => {
-    let left = req.body.left || -1;
-    let right = req.body.right || -1;
-    let payload = broadcast(EVENT_ORCHESTRA_SCORE, [ left, right ]);
+    let arr = req.body;
+    if (!Array.isArray(arr) || arr.length != 2) throw new Error('body is a invalid array');
+    let payload = broadcast(EVENT_ORCHESTRA_SCORE, arr);
     res.send(payload);
 });
 
