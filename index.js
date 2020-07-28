@@ -99,6 +99,7 @@ app.post("/api/orchestra/change", basicAuth({ users }), (req, res, next) => {
 });
 // Tells the OCR to skip the current locked on subject
 app.post("/api/orchestra/skip", basicAuth({users}), (req, res, next) => {
+    console.log("requested a skip");
     let payload = broadcast(EVENT_ORCHESTRA_SKIP);
     res.send(payload);
 });
