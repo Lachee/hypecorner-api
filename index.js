@@ -12,6 +12,7 @@ var basicAuth = require('express-basic-auth');
 const { stringify } = require('querystring');
 app.set('view engine', 'ejs');
 app.use(express.json());
+app.use(express.static('public'));
 
 //Setup the authorization
 var users = {};

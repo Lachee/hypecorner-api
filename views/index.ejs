@@ -30,7 +30,12 @@
         </style>
     </head>
     <body>
-        <input id="volume-slider" type="range" min="0", max="1" step="0.001"></slider>
+        <!-- Hidden AUdio Stuff -->
+        <input id="volume-slider" type="range" min="0", max="1" step="0.001" />
+        <audio id="audio-woosh" src="sound/woosh_short.wav"></audio>
+        <audio id="audio-woosh-reverse" src="sound/woosh_short_reverse.wav"></audio>
+
+        <!-- Transition -->
         <div class="transition-container from-top">
             <span class="tile"></span>
             <span class="tile"></span>
@@ -47,6 +52,8 @@
         <!-- Create a Twitch.Embed object that will render within the "twitch-embed" root element. -->
         <script type="text/javascript">
             const volumeSlider = document.getElementById("volume-slider");
+            const audioWoosh = document.getElementById("audio-woosh");
+            const audioWooshReverse = document.getElementById("audio-woosh-reverse");
             
             var originalVolume = 0;
             var twitchChannel = "<%= channel %>";
@@ -135,11 +142,11 @@
                 volumeSlider.value = originalVolume = twitchEmbed.getVolume();
 
                 //Slide the stuff
+                tl.add(() => { audioWoosh.play(); });
                 tl.to(".from-top .tile", {
                     duration: 0.4,
                     height: "100%",
                     top: "0%",
-                    delay: 0.2,
                     stagger: 0.05,
                 });
 
@@ -171,13 +178,11 @@
                         twitchEmbed.setVolume(val);
                     }
                 });
-
-
+                tl.add(() => { audioWooshReverse.play(); });
                 tl.to(".from-top .tile", {
                     duration: 0.4,
                     height: "100%",
                     top: "100%",
-                    delay: 1,
                     stagger: -0.05,
                 });
                 tl.set(".from-top .tile", { top: "0", height: "0" });
