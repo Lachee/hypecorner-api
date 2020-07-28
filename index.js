@@ -104,7 +104,7 @@ app.post("/api/orchestra/skip", basicAuth({users}), (req, res, next) => {
 });
 // Tells the clients that we are about to change and you should do the preroll
 app.post("/api/orchestra/preroll", basicAuth({users}), (req, res, next) => {
-    let payload = broadcast(EVENT_ORCHESTRA_PREROLL, { duration: req.body.duration || 0 });
+    let payload = broadcast(EVENT_ORCHESTRA_PREROLL, { name: req.body.name || 0 });
     res.send(payload);
 });
 // Reminds all the clients that we still exist and the users current score.
