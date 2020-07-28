@@ -50,26 +50,27 @@ const EVENT_ORCHESTRA_SCORE     = 'ORCHESTRA_SCORE';    //Sent every now and aga
 const EVENT_BLACKLIST_ADD       = 'BLACKLIST_ADDED';    //Invoked when a user is added to the blacklist
 const EVENT_BLACKLIST_REMOVE    = 'BLACKLIST_REMOVED';  //Invoked when a user is removed from the blacklist
 
-// setChannel changes what everyone is watching.
-function setChannel(name) {
-    console.log("Now hosting", currentChannel);
-
+// change channel changes what everyone is watching.
+function changeChannel(name) {    
     //Set the name
     currentChannel = name;
-    broadcast(EVENT_ORCHESTRA_CHANGE, { name: currentChannel });
+    console.log("Now hosting", currentChannel);
+    return broadcast(EVENT_ORCHESTRA_CHANGE, { name: currentChannel });
 }
 
 // broadcast sends a message to every websocket connection
 function broadcast(event, payload = null) {
     //Prepare the payload
-    var json = JSON.stringify({
+    var body = {
         e: event.toUpperCase(),
         d: payload
-    });
+    };
+    var json = JSON.stringify(body);
 
     //Tell every single connection the new channel name
     var wss = expressWs.getWss('/');
     wss.clients.forEach((client) => client.send(json));
+    return body;
 }
 
 //Listen to websocket connections. We dont care what they send really.
@@ -81,36 +82,37 @@ app.ws('/listen', function(ws, req) {
 });
 
 /////////////////// CHANNEL
-//When someone posts to the channel name, then we will update the list.
-app.post("/api/channel/:name", basicAuth({ users }), (req, res, next) => {
-    //Update the post
-    setChannel(req.params.name);
-
-    //Return the new channel
-    res.send({ name: currentChannel });
-});
-
-//If someone calls the /channel, we will retunr the current chanenl
+// Gets what channel we are currently on
 app.get("/api/channel", (req, res, next) => {
     res.send({ name: currentChannel });
 });
 
+/////////////////// ORCHESTRA
+// Tells the clients that we are on a new channel
+app.post("/api/orchestra/change", basicAuth({ users }), (req, res, next) => {
+    var name = req.body.name || "";
+    if (name == '') throw new Error('name cannot be empty');
+    
+    //Update the current channel
+    changeChannel(name);
+    res.send({ name: currentChannel });
+});
 // Tells the OCR to skip the current locked on subject
 app.post("/api/orchestra/skip", basicAuth({users}), (req, res, next) => {
-    broadcast(EVENT_ORCHESTRA_SKIP);
-    res.send(true);
+    let payload = broadcast(EVENT_ORCHESTRA_SKIP);
+    res.send(payload);
 });
 // Tells the clients that we are about to change and you should do the preroll
 app.post("/api/orchestra/preroll", basicAuth({users}), (req, res, next) => {
-    broadcast(EVENT_ORCHESTRA_PREROLL, { duration: req.body.duration || 0 });
-    res.send(true);
+    let payload = broadcast(EVENT_ORCHESTRA_PREROLL, { duration: req.body.duration || 0 });
+    res.send(payload);
 });
 // Reminds all the clients that we still exist and the users current score.
 app.post("/api/orchestra/score", basicAuth({users}), (req, res, next) => {
-    var left = req.body.left || -1;
-    var right = req.body.right || -1;
-    broadcast(EVENT_ORCHESTRA_SCORE, [ left, right ]);
-    res.send(true);
+    let left = req.body.left || -1;
+    let right = req.body.right || -1;
+    let payload = broadcast(EVENT_ORCHESTRA_SCORE, [ left, right ]);
+    res.send(payload);
 });
 
 /////////////////// BLACKLIST
