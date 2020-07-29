@@ -18,3 +18,7 @@ API isn't documented yet since this is private use at the moment. In general tho
 * `/api/channel` gets the current channel.
 
 every other endpoint requires authorization. See code for details.
+
+## Attribution
+This project uses some assets that require attribution. Please find them in `ATTRIBUTION` files.
+- `public/sound/ATTRIBUTION` list of sound attributions
