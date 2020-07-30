@@ -21,7 +21,7 @@ const authentication = require('./authorize');
 
 //Prepare the gateway
 const gateway = require('./gateway')(app);
-app.use('/live', gateway.router);               //This will be eventually /api too, but disbaled to help debug routing.
+app.use('/api', gateway.router);               //This will be eventually /api too, but disbaled to help debug routing.
 
 //Prepare the routes
 const options = { 

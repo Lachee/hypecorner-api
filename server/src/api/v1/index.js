@@ -6,7 +6,7 @@ module.exports = function(options) {
 
     //Add some API boys
     router.use('/blacklist', require('./blacklist')(options).router);
-    //router.use('/orchestra', require('./orchestra')(options).router);
+    router.use('/orchestra', require('./orchestra')(options).router);
     //router.use('/channel', require('./channel')(options).router);
 
     return router;

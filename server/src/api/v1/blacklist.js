@@ -1,6 +1,5 @@
 const Joi           = require('joi');
 const express       = require('express');
-const gateway = require('../../gateway');
 
 const NotFoundError     = require('../../http-errors').NotFoundError;
 const BadRequestError   = require('../../http-errors').BadRequestError;
@@ -68,7 +67,7 @@ module.exports = function(options) {
     });
 
     //Add a user to the blacklist
-    this.router.post('/', async (req, res, next) => {
+    this.router.post('/', auth, async (req, res, next) => {
         
         //Validate the schema
         const validation = schema.validate(req.body);

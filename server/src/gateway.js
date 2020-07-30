@@ -9,10 +9,6 @@ module.exports = function Gateway(app) {
 
     //Prepare a list of events. This isn't required but is a convience.
     this.Events = {
-        EVENT_ORCHESTRA_SKIP      : 'ORCHESTRA_SKIP',     //Sent to tell the OCR that we wish to skip this nonsense and please find us a new channel.
-        EVENT_ORCHESTRA_PREROLL   : 'ORCHESTRA_PREROLL',  //Sent to tell the embed client and OBS clients to run a preroll for a specified duration as we are about to change.
-        EVENT_ORCHESTRA_CHANGE    : 'ORCHESTRA_CHANGE',   //Sent to tell the embed clients to switch channel
-        EVENT_ORCHESTRA_SCORE     : 'ORCHESTRA_SCORE',    //Sent every now and again to tell the users what we think the score is. More a reminder to stay connected.
 
         EVENT_BLACKLIST_ADD       : 'BLACKLIST_ADDED',    //Invoked when a user is added to the blacklist
         EVENT_BLACKLIST_REMOVE    : 'BLACKLIST_REMOVED',  //Invoked when a user is removed from the blacklist
