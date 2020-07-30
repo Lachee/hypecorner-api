@@ -6,7 +6,7 @@ module.exports = function(options) {
     this.options = options;
     this.router = express.Router();
 
-    const { db, gateway, auth } = this.options;
+    const { db, auth } = this.options;
     const channels = db.get('channels');
 
     const rules = {       

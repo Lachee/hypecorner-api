@@ -49,6 +49,11 @@ channels.update(
     { $pop: { hosts: 1 }, $set: { live: false } }
 );
 
+console.log("TODO: Use S3 to store images");
+console.log("TODO: Power BI?");
+console.log("TODO: Create Frontend");
+console.log("TODO: Add some more statistics endpoints");
+
 //setup the port and listen
 const port = process.env.PORT || 2525;
 app.listen(port, () => {
