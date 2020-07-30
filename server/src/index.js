@@ -28,7 +28,7 @@ const options = {
     app, 
     gateway,
     db,
-    authorize: authentication({
+    auth: authentication({
         database: db,
         key: process.env.AUTH_KEY,
     })

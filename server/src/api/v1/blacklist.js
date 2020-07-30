@@ -1,17 +1,19 @@
 const Joi           = require('joi');
 const express       = require('express');
+const gateway = require('../../gateway');
 
 const NotFoundError     = require('../../http-errors').NotFoundError;
 const BadRequestError   = require('../../http-errors').BadRequestError;
 const ConflictError     = require('../../http-errors').ConflictError;
 
+const EVENT_BLACKLIST_ADD       = 'BLACKLIST_ADD';
+const EVENT_BLACKLIST_REMOVE    = 'BLACKLIST_REMOVE';
+
 module.exports = function(options) {    
     this.options = options;
     this.router = express.Router();
 
-    const db = this.options.db;
-    const app = this.options.app;
-    const auth = this.options.authorize;
+    const { db, gateway, auth } = this.options;
 
     //Blacklist entry
     const blacklist = db.get('blacklist');
@@ -45,6 +47,9 @@ module.exports = function(options) {
         //Delete the record
         const result = await blacklist.remove({ name: validation.value });
         if (result.deletedCount == 0) throw new NotFoundError('failed to delete any records');
+
+        //Give the results back.
+        gateway.broadcast(EVENT_BLACKLIST_REMOVE, {name: validation.value });
         res.send({ count: result.deletedCount });
     });
 
@@ -82,8 +87,12 @@ module.exports = function(options) {
         if (await blacklist.findOne({ name: name }) !== null)
             throw new ConflictError('Name already exists');
         
-        //Upload the entry and share
-        res.send(await blacklist.insert(entry));
+        //Upload the entry
+        const newEntry = await blacklist.insert(entry);
+        
+        //Give the results back
+        gateway.broadcast(EVENT_BLACKLIST_REMOVE, newEntry);
+        res.send(newEntry);
     });
 
     //Get the blacklist

@@ -38,8 +38,12 @@ module.exports = function Gateway(app) {
         });        
     });
 
-    //Broadcast function
+    /** Broadcasts an event to all connected clients. */
     this.broadcast = function(event, data) {
+        //Vadliate we have clients
+        if (this.wss == null || this.wss.clients == null)
+            return false;
+
         //Create the payload
         const payload = {
             e: event.toUpperCase(),
@@ -49,11 +53,12 @@ module.exports = function Gateway(app) {
         //Create the json object and send.
         const json = JSON.stringify(payload);
         this.wss.clients.forEach((client) => client.send(json));
+        return true;
     };
 
     //The views count
     this.views = function() {
-        if (this.wss.clients == null) return 0;
+        if (this.wss == null || this.wss.clients == null) return 0;
         return this.wss.clients.length;
     }
 
