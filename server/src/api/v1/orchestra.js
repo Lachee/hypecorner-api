@@ -68,32 +68,36 @@ module.exports = function(options) {
         }
         
         //Updating or Create the existing channel
-        let existing = await channels.findOne({ name: name },  { limit: 1, projection: { _id: 1, name: 1 } });
+        const existing = await channels.findOne({ name: name },  { limit: 1, projection: { _id: 1, name: 1 } });
         if (existing != null) {
             //Updating a existing record
-            existing = await channels.update(
+            await channels.update(
                 { _id: existing._id },
                 { 
                     $push: { hosts: host },
                     $set: { live: true },
                 }
             );
+
+            //Get the ID and the name
+            this.channelId = existing._id;
+            this.channelName = existing.name;
         } else {
+
             //Create a new record
-            existing = await channels.insert({
+            const newResult = await channels.insert({
                 name: name,
                 live: true,
                 version: 1,
                 hosts: [ host ]
             });
+
+            this.channelId = newResult._id;
+            this.channelName = name;
         }
         
-        //Update our reference
-        this.channelId = existing._id;
-        this.channelName = existing.name;
-        this.scores = [ -1, -1 ];
-        
         //Broadcast the change
+        this.scores = [ -1, -1 ];
         gateway.broadcast(EVENT_ORCHESTRA_CHANGE, { name: this.channelName });
         res.send({ name: this.channelName });
     });
