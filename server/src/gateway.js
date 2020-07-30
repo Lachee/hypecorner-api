@@ -9,10 +9,8 @@ module.exports = function Gateway(app) {
 
     //Prepare a list of events. This isn't required but is a convience.
     this.Events = {
-
         EVENT_BLACKLIST_ADD       : 'BLACKLIST_ADDED',    //Invoked when a user is added to the blacklist
         EVENT_BLACKLIST_REMOVE    : 'BLACKLIST_REMOVED',  //Invoked when a user is removed from the blacklist
-
         EVENT_STATUS              : 'STATUS',
     }
 

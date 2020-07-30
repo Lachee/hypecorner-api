@@ -15,6 +15,7 @@ module.exports = function(options) {
     this.scores = [];
 
     const { db, gateway, auth } = this.options;
+    const statistics = db.get('statistics');
 
     //Rules on how to validate blacklist entries
     const rules = {
