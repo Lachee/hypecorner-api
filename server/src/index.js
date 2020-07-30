@@ -42,6 +42,13 @@ const middlewares = require('./middlewares');
 app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);
 
+//Using the MongoDB, we need to quickly purge the invalid entries.
+const channels = db.get('channels');
+channels.update(
+    { live: true }, 
+    { $pop: { hosts: 1 }, $set: { live: false } }
+);
+
 //setup the port and listen
 const port = process.env.PORT || 2525;
 app.listen(port, () => {

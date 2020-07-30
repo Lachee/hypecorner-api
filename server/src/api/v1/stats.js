@@ -6,13 +6,25 @@ module.exports = function(options) {
     this.options = options;
     this.router = express.Router();
 
-    const db = this.options.db;
-    const app = this.options.app;
-    const auth = this.options.authorize;
+    const { db, gateway, auth } = this.options;
+    const channels = db.get('channels');
 
-    //Get the blacklist
-    this.router.get('/', (req, res, next) => {
+    const rules = {       
+        name: Joi.string()
+            .min(1).max(25)
+            .lowercase()
+            .pattern(/^[a-zA-Z0-9_]{1,25}$/, 'Twitch channel name')
+            .trim()
+            .required(),
+    }
 
+    //Gets the channel hosts
+    this.router.get('/:name', auth, async (req, res, next) => {
+        const validation = rules.name.validate(req.params.name);
+        if (validation.error) throw validation.error;
+
+        const results = await channels.findOne({ name: validation.value }, { projection: { hosts: 1 } } );
+        res.send(results);
     });
 
     //Just reutrn the router
