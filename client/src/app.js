@@ -34,7 +34,6 @@ orchestra.fetchCurrentChannel().then(async (channel) => {
 
 export async function screenDown() {
 
-
     //Snap to the start
     anime.set('.transition .tile', {
         height: '0%',
@@ -45,63 +44,59 @@ export async function screenDown() {
     defaultVolume = embed.getVolume();
     let volume = { value: defaultVolume };
 
-    //Setup the timeline (dont think this is required)
-    var tl = anime.timeline({
-        easing: 'easeOutExpo',
-        duration: 750
-    });
-
     //Get the sound element and play it
     const sound = document.getElementById('audio-woosh');
     sound.play(); 
 
     //Animate
-    tl.add({    //Show transition
+    //Show transition
+    await anime({    
         targets: '.transition .tile',
         height: '100%',
         top: "0%",
         delay: anime.stagger(100),
         easing: 'easeInOutQuad'
-    });
-    tl.add({    //Make volume go bye bye
+    }).finished;
+
+    //Make volume go bye bye
+    await anime({    
         targets: volume,
         value: 0,
         easing: 'easeOutExpo',
         update: () => { embed.setVolume(volume.value); }
-    });
-
-
-    return tl.finished;
+    }).finished;
 }
 
 export async function screenUp() {
-    //Setup the timeline
-    var tl = anime.timeline({
-        easing: 'easeOutExpo',
-        duration: 750
-    });
+
+    //Snap to position
     anime.set('.transition .tile', {
         height: '100%',
         top: "0%",
     });
 
-    //Get the sound element and play it
+    //unduck the audio
+    let volume = { value: 0 };
+    let unduckTask = anime({ 
+        targets: volume,
+        value: defaultVolume,
+        easing: 'easeInExpo',
+        update: () => { embed.setVolume(volume.value); }
+    }).finished;
+
+    //Play the sound effect
     const sound = document.getElementById('audio-woosh-reverse');
     sound.play(); 
 
-    //Animate
-    let volume = { value: 0 };
-    tl.add({    //Make volume go hello
-        targets: volume,
-        value: defaultVolume,
-        easing: 'easeOutExpo',
-        update: () => { embed.setVolume(volume.value); }
-    });
-    tl.add({    //Make transition
+    //Make the squares go bye bye
+    await anime({
         targets: '.transition .tile',
         height: "100%",
         top: "100%",
         delay: anime.stagger(100),
         easing: 'easeInOutQuad'
-    });
+    }).finished;
+
+    //Finally, make sure the unduck is finished.
+    await unduckTask;
 }
