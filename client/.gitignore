@@ -1,0 +1,6 @@
+# Disable the distruption and node
+/public/dist
+/node_modules
+
+# Disable the temporary serve
+serve.go
