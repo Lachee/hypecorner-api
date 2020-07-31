@@ -28,11 +28,14 @@ const options = {
     app, 
     gateway,
     db,
-    auth: authentication({
-        database: db,
-        key: process.env.AUTH_KEY,
-    })
+    auth: authentication({  key: process.env.AUTH_KEY })
 };
+
+//Setup the default headers
+app.use((req, res, next) => {
+    res.setHeader('moonmin', 'always');
+    next();
+});
 
 //Setup the API
 app.use('/api', require('./api/v1')(options));
@@ -41,6 +44,8 @@ app.use('/api', require('./api/v1')(options));
 const middlewares = require('./middlewares');
 app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);
+
+
 
 //Using the MongoDB, we need to quickly purge the invalid entries.
 const channels = db.get('channels');
