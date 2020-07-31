@@ -1,5 +1,3 @@
-
-
-function test() {
-    
+export function test() {
+    console.log("HELLO WORLD");
 }

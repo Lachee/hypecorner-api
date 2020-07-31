@@ -1,2 +1,6 @@
+# node modules and vendors are lame >:(
 node_modules
+vendors
+
+# .evn and .key contains secrets and shouldn't be included
 .env
