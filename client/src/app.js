@@ -51,6 +51,10 @@ export async function screenDown() {
         duration: 750
     });
 
+    //Get the sound element and play it
+    const sound = document.getElementById('audio-woosh');
+    sound.play(); 
+
     //Animate
     tl.add({    //Show transition
         targets: '.transition .tile',
@@ -80,6 +84,10 @@ export async function screenUp() {
         height: '100%',
         top: "0%",
     });
+
+    //Get the sound element and play it
+    const sound = document.getElementById('audio-woosh-reverse');
+    sound.play(); 
 
     //Animate
     let volume = { value: 0 };
