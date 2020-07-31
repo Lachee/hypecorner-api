@@ -1,5 +1,6 @@
-const Joi       = require('joi');
-const express   = require('express');
+const Joi               = require('joi');
+const express           = require('express');
+const BadRequestError   = require('../../http-errors').BadRequestError;
 
 const EVENT_ORCHESTRA_SKIP     = 'ORCHESTRA_SKIP';     //Sent to tell the OCR that we wish to skip this nonsense and please find us a new channel.
 const EVENT_ORCHESTRA_PREROLL  = 'ORCHESTRA_PREROLL';  //Sent to tell the embed client and OBS clients to run a preroll for a specified duration as we are about to change.
@@ -40,6 +41,9 @@ module.exports = function(options) {
         //Validate the name
         const validation = rules.name.validate(req.body.name || null);
         if (validation.error != null) throw validation.error;
+
+        if (this.channelName == validation.value)
+            throw new BadRequestError('channel is already hosted');
 
         //Calculate now
         const now = ~~(new Date() / 1000);

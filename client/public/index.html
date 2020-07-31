@@ -1,6 +1,24 @@
 <html>
     <head>
-        <script src="dist/app.js"></script>
+        <title>HypeCorner</title>
+        <link rel="stylesheet" href="dist/app.css">
     </head>
-    test
+    <body>
+        
+        <div class='transition'>
+            <span class="tile"></span>
+            <span class="tile"></span>
+            <span class="tile"></span>
+            <span class="tile"></span>
+            <span class="tile"></span>
+            <span class="tile"></span>
+        </div>
+
+        <!-- Add a placeholder for the Twitch embed -->
+        <div id="twitch-embed"></div>
+        <script src="https://embed.twitch.tv/embed/v1.js"></script>
+        
+        <!-- Finally include our app, so it can see all O.0 -->
+        <script src="dist/app.js"></script>
+    </body>
 </html>

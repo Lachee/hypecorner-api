@@ -1,35 +1,43 @@
 const express = require('express');
+const EVENT_STATUS = 'STATUS';
+const EVENT_HEARTBEAT = 'HEARTBEAT';
 
 module.exports = function Gateway(app) {
 
     //Prepare the express WS and our router
-    this.wss = require('express-ws')(app);
+    this.wss = require('express-ws')(app).getWss();
     this.app = app;
     this.router = express.Router();
+    this.heartbeatDuration = 10000;
 
-    //Prepare a list of events. This isn't required but is a convience.
-    this.Events = {
-        EVENT_BLACKLIST_ADD       : 'BLACKLIST_ADDED',    //Invoked when a user is added to the blacklist
-        EVENT_BLACKLIST_REMOVE    : 'BLACKLIST_REMOVED',  //Invoked when a user is removed from the blacklist
-        EVENT_STATUS              : 'STATUS',
-    }
+    //The route to get connections
+    this.router.get('/views', (req, res, next) => {
+        res.send({ views: this.views() });
+    });
 
     //Main WS route, when someone first joins
-    this.router.ws('/gateway', (ws, req) => {
-        
-        //WS is alive by default.
+    this.router.ws('/', (ws, req) => {
+        const self = this;
         ws.isAlive = true;
-        
-        //If they pong back, then we will set them as alive.
-        ws.on('pong', () => {
-            ws.isAlive = true;
-        });
         
         //They have sent a message
         ws.on('message', function(msg) {
+            //Has responded to a heartbeat, so keep it alive again.
+            // (im lazy and should check the event, but any is good enough really)
             ws.isAlive = true;
-            console.log('WS has sent a message.');
         });        
+        
+        //TODO: Create statistics when we get viewers
+        console.log("TODO: Create statistics when we get viewers");
+
+        //On close, tell everyone else
+        // This is a nice idea, but its better to include this in the heartbeat
+        //ws.on('close', function(msg) {
+        //    self.broadcast(EVENT_STATUS, { views: self.views() });  
+        //});
+        
+        ////Broadcast to everyone there is new views
+        //this.broadcast(EVENT_STATUS, { views: this.views() });   
     });
 
     /** Broadcasts an event to all connected clients. */
@@ -47,30 +55,35 @@ module.exports = function Gateway(app) {
         //Create the json object and send.
         const json = JSON.stringify(payload);
         this.wss.clients.forEach((client) => client.send(json));
+        console.log('📣 Orchestra Broadcast ', event, data);
         return true;
     };
 
     //The views count
     this.views = function() {
         if (this.wss == null || this.wss.clients == null) return 0;
-        return this.wss.clients.length;
+        return this.wss.clients.size;
     }
 
-    //Interval the ping rate, every 10s
-    setInterval(() => {
-       
-        if (this.views() > 0) {
-            //Ping Everyone
-            this.wss.clients.forEach(client => {
-                if (client.isAlive) return client.terminate();
-                client.isAlive = false;
-                client.ping(null, false, true);
-            });
-
-            //Update the stats for everyone
-            this.broadcast(this.Events.EVENT_STATUS, { views: this.views() });        
-        }
-    }, 10000);
+    setInterval(() => {        
+        this.wss.clients.forEach(client => {
+            //Terminate dead clients
+            if (!client.isAlive) {
+                client.terminate();
+                return;
+            }
+            
+            //Trigger a heartbeat
+            client.isAlive = false;
+            client.send(JSON.stringify({ 
+                e: EVENT_HEARTBEAT, 
+                d: { 
+                    duration: this.heartbeatDuration,
+                    viewers: this.views(),
+                }
+            }));
+        });
+    }, this.heartbeatDuration)
 
     return this;
 } 

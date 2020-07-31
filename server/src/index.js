@@ -21,7 +21,7 @@ const authentication = require('./authorize');
 
 //Prepare the gateway
 const gateway = require('./gateway')(app);
-app.use('/api', gateway.router);               //This will be eventually /api too, but disbaled to help debug routing.
+app.use('/api/gateway', gateway.router);    
 
 //Prepare the routes
 const options = { 
@@ -44,8 +44,6 @@ app.use('/api', require('./api/v1')(options));
 const middlewares = require('./middlewares');
 app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);
-
-
 
 //Using the MongoDB, we need to quickly purge the invalid entries.
 const channels = db.get('channels');
