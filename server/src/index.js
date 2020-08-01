@@ -8,7 +8,6 @@ const cors          = require('cors');
 //setup monk
 const monk = require('monk');
 const db = monk(process.env.DATABASE_URL);
-const routePrefix = process.env.ROUTE_PREFIX || '/api'; //TODO: make this a router instead
 
 //Setup express
 const app = express();
@@ -20,9 +19,12 @@ app.use(cors());
 //Setup the auth
 const authentication = require('./authorize');
 
+//Setup the default router
+const router = express.Router();
+
 //Prepare the gateway
 const gateway = require('./gateway')(app);
-app.use(routePrefix + '/gateway', gateway.router);    
+router.use('/gateway', gateway.router);    
 
 //Prepare the routes
 const options = { 
@@ -33,18 +35,18 @@ const options = {
 };
 
 //Setup the default headers
-app.use((req, res, next) => {
+router.use((req, res, next) => {
     res.setHeader('moonmin', 'always');
     next();
 });
 
 //Setup the API
-app.use(routePrefix, require('./api/v1')(options));
+router.use(require('./api/v1')(options));
 
 //Use the middleware
 const middlewares = require('./middlewares');
-app.use(middlewares.notFound);
-app.use(middlewares.errorHandler);
+router.use(middlewares.notFound);
+router.use(middlewares.errorHandler);
 
 //Using the MongoDB, we need to quickly purge the invalid entries.
 const channels = db.get('channels');
@@ -58,8 +60,11 @@ console.log("TODO: Power BI?");
 console.log("TODO: Create Frontend");
 console.log("TODO: Add some more statistics endpoints");
 
+//setup the route
+app.use(process.env.ROUTE || '/api', router);
+
 //setup the port and listen
 const port = process.env.PORT || 2525;
 app.listen(port, () => {
-    console.log(`API Listening at http://localhost:${port}` + routePrefix);
+    console.log(`API Listening at http://localhost:${port}`);
 });
