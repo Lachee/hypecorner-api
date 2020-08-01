@@ -8,6 +8,7 @@ const cors          = require('cors');
 //setup monk
 const monk = require('monk');
 const db = monk(process.env.DATABASE_URL);
+const routePrefix = process.env.ROUTE_PREFIX || '/api'; //TODO: make this a router instead
 
 //Setup express
 const app = express();
@@ -21,7 +22,7 @@ const authentication = require('./authorize');
 
 //Prepare the gateway
 const gateway = require('./gateway')(app);
-app.use('/api/gateway', gateway.router);    
+app.use(routePrefix + '/gateway', gateway.router);    
 
 //Prepare the routes
 const options = { 
@@ -38,7 +39,7 @@ app.use((req, res, next) => {
 });
 
 //Setup the API
-app.use('/api', require('./api/v1')(options));
+app.use(routePrefix, require('./api/v1')(options));
 
 //Use the middleware
 const middlewares = require('./middlewares');
@@ -60,5 +61,5 @@ console.log("TODO: Add some more statistics endpoints");
 //setup the port and listen
 const port = process.env.PORT || 2525;
 app.listen(port, () => {
-    console.log(`API Listening at http://localhost:${port}`);
+    console.log(`API Listening at http://localhost:${port}` + routePrefix);
 });
