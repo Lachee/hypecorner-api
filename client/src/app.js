@@ -2,7 +2,7 @@ import './app.scss';
 import {Orchestra} from './orchestra';
 import anime from 'animejs/lib/anime.es.js';
 
-export const orchestra = new Orchestra('localhost:2525/api', false);
+export const orchestra = new Orchestra(process.env.API_URL, process.env.API_SSL == 'true');
 
 //Default volume of the twitch player. This is what we will restore to.
 let defaultVolume = 0;

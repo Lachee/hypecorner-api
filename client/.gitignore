@@ -4,3 +4,4 @@
 
 # Disable the temporary serve
 serve.go
+.env
