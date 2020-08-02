@@ -7,6 +7,8 @@ const EVENT_ORCHESTRA_PREROLL  = 'ORCHESTRA_PREROLL';  //Sent to tell the embed 
 const EVENT_ORCHESTRA_CHANGE   = 'ORCHESTRA_CHANGE';   //Sent to tell the embed clients to switch channel
 const EVENT_ORCHESTRA_SCORE    = 'ORCHESTRA_SCORE';    //Sent every now and again to tell the users what we think the score is. More a reminder to stay connected.
 
+const DB_VERSION = 2;
+
 
 module.exports = function(options) {
     this.options = options;
@@ -46,13 +48,13 @@ module.exports = function(options) {
             throw new BadRequestError('channel is already hosted');
 
         //Calculate now
-        const now = ~~(new Date() / 1000);
+        const now = new Date() / 1;
         const name = validation.value;
 
         //Update existing channels end
         if (this.channelId != null) {
             await channels.update( 
-                { _id: this.channelId },
+                { _id: this.channelId, version: DB_VERSION },
                 { $set: { 
                     "hosts.$[elem].end": now, 
                     "hosts.$[elem].next": name,
@@ -72,7 +74,7 @@ module.exports = function(options) {
         }
         
         //Updating or Create the existing channel
-        const existing = await channels.findOne({ name: name },  { limit: 1, projection: { _id: 1, name: 1 } });
+        const existing = await channels.findOne({ name: name, version: DB_VERSION },  { limit: 1, projection: { _id: 1, name: 1 } });
         if (existing != null) {
             //Updating a existing record
             await channels.update(
@@ -92,7 +94,7 @@ module.exports = function(options) {
             const newResult = await channels.insert({
                 name: name,
                 live: true,
-                version: 1,
+                version: DB_VERSION,
                 hosts: [ host ]
             });
 
@@ -147,8 +149,8 @@ module.exports = function(options) {
         //Push the score to the mongo DB
         this.scores = validation.value;
         await channels.update( 
-            { _id: this.channelId },
-            { $push: { "hosts.$[elem].scores": [ ~~(new Date() / 1000), this.scores[0], this.scores[1] ] } },
+            { _id: this.channelId, version: DB_VERSION },
+            { $push: { "hosts.$[elem].scores": [ (new Date() / 1), this.scores[0], this.scores[1] ] } },
             { arrayFilters: [ { "elem.end": { $lte: 0 } } ]  }
         );
 
