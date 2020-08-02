@@ -1,5 +1,10 @@
-const Joi = require('joi');
-const express = require('express');
+const Joi               = require('joi');
+const express           = require('express');
+const fileUpload        = require('express-fileupload');
+const NotFoundError     = require('../../http-errors').NotFoundError;
+const BadRequestError   = require('../../http-errors').BadRequestError;
+
+const DB_VERSION = 2;
 
 module.exports = function(options) {    
     this.options = options;
@@ -21,9 +26,11 @@ module.exports = function(options) {
                 .dataUri()
                 .required(),
     }
-
+    
+    
     // Sets the channels thumbnail
-    this.router.post('/:name/thumbail', auth, async (req, res, next) => {
+    this.router.use('/:name/thumbnail', fileUpload({}));
+    this.router.post('/:name/thumbnail', auth, async (req, res, next) => {
 
         //Stop if we cannot process images
         if (bucket == null)
@@ -32,18 +39,17 @@ module.exports = function(options) {
         //Vadliate the name
         let validation = rules.name.validate(req.params.name);
         if (validation.error) throw validation.error;
+        const name = validation.value;
 
-        //Validate the body
-        //TODO: Actual image validation
-        validation = rules.image.validate(req.body);
-        if (validation.error) throw validation.error;
-        
+        //Make sure the image exists
+        if (!req.files.image) 
+            throw new BadRequestError('Image not supplied');
+
         //Finally upload the image
-        const buffer = Buffer.from(validation.value.image.replace(/^data:image\/\w+;base64,/, ""),'base64');
         bucket.putObject({
             Bucket: process.env.AWS_BUCKET,
             Key: `${name}.jpg`,
-            Body: buff,
+            Body: req.files.image.data,
             ContentType: 'image/jpeg'
         }, (err, data) => {
             if (err) throw err;
@@ -51,6 +57,45 @@ module.exports = function(options) {
         });
     });
     
+    // Gets the top 10 recent channels
+    this.router.get('/recent', async (req, res, next) => {
+        const result = await channels.aggregate([
+            { '$project': { 'name': 1, 'hosts.start': true } }, 
+            { '$unwind': '$hosts' }, 
+            { '$sort': { 'hosts.start': -1 }}, 
+            { '$limit': 10 }
+        ]);
+        res.send(result);
+    });
+
+    // Gets information about a specific channel
+    this.router.get('/:name', async (req, res, next) => {
+        //Validate the name
+        const validation = rules.name.validate(req.params.name);
+        if (validation.error != null)
+            throw validation.error;
+
+        const name = validation.value;
+
+        //Get the object
+        const result = await channels.findOne(
+            { name: name , version: DB_VERSION },
+            { 
+                projection: {
+                    '_id': true,
+                    'name': true,
+                    'live': true,
+                    'title': true,
+                } 
+            }
+        );
+        if (result == null) throw new NotFoundError('failed to find any channels with specified name');
+
+        result.url = "https://twitch.tv/" + name;
+        if (bucket != null) result.thumbnail = "https://cdn.hypelight.tv/" + bucket
+        
+        res.send(result);
+    });
     
     //Just reutrn the router
     return this;

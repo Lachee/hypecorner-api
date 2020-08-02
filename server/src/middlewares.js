@@ -12,6 +12,9 @@ const errorHandler = (error, req, res, next) => {
     if (error instanceof Joi.ValidationError)
         res.statusCode = 400;
 
+    //Log the endpoint
+    console.error(error);
+
     //SEt the status and return the JSON
     res.status(res.statusCode === 200 ? (error.statusCode || 500) : res.statusCode);
     res.json({

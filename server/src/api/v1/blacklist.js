@@ -35,7 +35,6 @@ module.exports = function(options) {
 
     //The compiled schema for the rules
     const schema = Joi.object().keys(rules);
-
     
     //Delete a user from the blacklist
     this.router.delete('/:name', auth, async (req, res, next) => {
@@ -98,8 +97,9 @@ module.exports = function(options) {
     });
 
     //Get the blacklist
-    this.router.get('/', (req, res, next) => {
-        blacklist.find().then(all => res.send(all));
+    this.router.get('/', async (req, res, next) => {
+        const results = await blacklist.find({ version: DB_VERSION });
+        res.send(results);
     });
 
     //Just reutrn the router

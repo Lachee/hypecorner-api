@@ -40,12 +40,11 @@ module.exports = function(options) {
         
         //The schema to validate against
         const schema = Joi.object({
-            name: rules.name,
-            image: rules.image
+            name: rules.name
         });
 
         //Validate the name
-        const validation = schema.validate({ name: 'monsterCat', image: demoimg });
+        const validation = schema.validate(req.body);
         if (validation.error != null) throw validation.error;
            
 
