@@ -4,6 +4,7 @@ const express_err   = require('express-async-errors');
 const morgan        = require('morgan');
 const helmet        = require('helmet');
 const cors          = require('cors');
+const S3            = require('aws-sdk/clients/s3');
 
 //setup monk
 const monk = require('monk');
@@ -19,6 +20,14 @@ app.use(cors());
 //Setup the auth
 const authentication = require('./authorize');
 
+//Setup the S3
+const bucketName = process.env.AWS_BUCKET || '';
+const bucket = bucketName != '' ? new S3({
+    accessKeyId: process.env.AWS_ACCESS_KEY || '',
+    secretAccessKey: process.env.AWS_SECRET_KEY || '',
+    Bucket: bucketName
+}) : null;
+
 //Setup the default router
 const router = express.Router();
 
@@ -28,9 +37,8 @@ router.use('/gateway', gateway.router);
 
 //Prepare the routes
 const options = { 
-    app, 
-    gateway,
-    db,
+    app, gateway,
+    db, bucket,
     auth: authentication({  key: process.env.AUTH_KEY })
 };
 

@@ -9,7 +9,6 @@ const EVENT_ORCHESTRA_SCORE    = 'ORCHESTRA_SCORE';    //Sent every now and agai
 
 const DB_VERSION = 2;
 
-
 module.exports = function(options) {
     this.options = options;
     this.router = express.Router();
@@ -18,7 +17,7 @@ module.exports = function(options) {
     this.channelName = "monstercat";
     this.scores = [];
 
-    const { db, gateway, auth } = this.options;
+    const { db, gateway, bucket, auth } = this.options;
     const channels = db.get('channels');
 
     //Rules on how to validate blacklist entries
@@ -34,22 +33,49 @@ module.exports = function(options) {
                     .items(Joi.number(), Joi.number())
                     .length(2)
                     .required(),
-    };
 
+        image: Joi.string()
+                    .trim()
+                    .dataUri(),
+    };
 
     //Changes the channel
     this.router.post('/change', auth, async (req, res, next) => {
         
-        //Validate the name
-        const validation = rules.name.validate(req.body.name || null);
-        if (validation.error != null) throw validation.error;
+        //The schema to validate against
+        const schema = Joi.object({
+            name: rules.name,
+            image: rules.image
+        });
 
-        if (this.channelName == validation.value)
-            throw new BadRequestError('channel is already hosted');
+        //Validate the name
+        const validation = schema.validate({ name: 'monsterCat', image: demoimg });
+        if (validation.error != null) throw validation.error;
+           
 
         //Calculate now
         const now = new Date() / 1;
-        const name = validation.value;
+        const name = validation.value.name;
+
+        //If we have a S3 bucket, lets upload the image
+        if (bucket != null && validation.value.image != null) {
+            const buff = Buffer.from(validation.value.image.replace(/^data:image\/\w+;base64,/, ""),'base64')
+            bucket.putObject({
+                Bucket: process.env.AWS_BUCKET,
+                Key: `${name}.jpg`,
+                Body: buff,
+                ContentType: 'image/jpeg'
+            }, (err, data) => {
+                if (err) res.send(err);
+                res.send(data);
+            });
+        }
+
+        return;
+
+        //Make sure we are not already hosting this channel
+        if (this.channelName == name)
+            throw new BadRequestError('channel is already hosted');
 
         //Update existing channels end
         if (this.channelId != null) {
