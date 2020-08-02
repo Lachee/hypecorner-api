@@ -17,7 +17,7 @@ module.exports = function(options) {
     this.channelName = "monstercat";
     this.scores = [];
 
-    const { db, gateway, bucket, auth } = this.options;
+    const { db, gateway, auth } = this.options;
     const channels = db.get('channels');
 
     //Rules on how to validate blacklist entries
@@ -33,10 +33,6 @@ module.exports = function(options) {
                     .items(Joi.number(), Joi.number())
                     .length(2)
                     .required(),
-
-        image: Joi.string()
-                    .trim()
-                    .dataUri(),
     };
 
     //Changes the channel
@@ -56,22 +52,6 @@ module.exports = function(options) {
         //Calculate now
         const now = new Date() / 1;
         const name = validation.value.name;
-
-        //If we have a S3 bucket, lets upload the image
-        if (bucket != null && validation.value.image != null) {
-            const buff = Buffer.from(validation.value.image.replace(/^data:image\/\w+;base64,/, ""),'base64')
-            bucket.putObject({
-                Bucket: process.env.AWS_BUCKET,
-                Key: `${name}.jpg`,
-                Body: buff,
-                ContentType: 'image/jpeg'
-            }, (err, data) => {
-                if (err) res.send(err);
-                res.send(data);
-            });
-        }
-
-        return;
 
         //Make sure we are not already hosting this channel
         if (this.channelName == name)
