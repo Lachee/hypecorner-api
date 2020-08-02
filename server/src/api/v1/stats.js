@@ -27,6 +27,30 @@ module.exports = function(options) {
         res.send(results);
     });
 
+    //Updates the database
+    this.router.post('/db/upgrade', auth, async (req, res, next) => {
+        const results = await channels.update( 
+            { version: 1 },
+            { 
+                $mul: { 
+                    "hosts.$[elem].end": 1000.0,
+                    "hosts.$[elem].start": 1000.0
+                },
+                $set: {
+                    version: 2
+                }
+            },
+            { 
+                multi: true,
+                arrayFilters: [ 
+                    { "elem.end": { $gte: 0 } } 
+                ]  
+            }
+        );
+
+        res.send(results);
+    });
+
     //Just reutrn the router
     return this;
 }

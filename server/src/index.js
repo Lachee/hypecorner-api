@@ -50,10 +50,7 @@ router.use(middlewares.errorHandler);
 
 //Using the MongoDB, we need to quickly purge the invalid entries.
 const channels = db.get('channels');
-channels.update(
-    { live: true }, 
-    { $pop: { hosts: 1 }, $set: { live: false } }
-);
+channels.update( { live: true }, { $pop: { hosts: 1 }, $set: { live: false } } );
 
 console.log("TODO: Use S3 to store images");
 console.log("TODO: Power BI?");
