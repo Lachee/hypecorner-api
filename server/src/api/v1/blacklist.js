@@ -8,6 +8,8 @@ const ConflictError     = require('../../http-errors').ConflictError;
 const EVENT_BLACKLIST_ADD       = 'BLACKLIST_ADD';
 const EVENT_BLACKLIST_REMOVE    = 'BLACKLIST_REMOVE';
 
+const DB_VERSION = 1;
+
 module.exports = function(options) {    
     this.options = options;
     this.router = express.Router();
@@ -44,7 +46,7 @@ module.exports = function(options) {
             throw validation.error;
             
         //Delete the record
-        const result = await blacklist.remove({ name: validation.value });
+        const result = await blacklist.remove({ name: validation.value, version: DB_VERSION });
         if (result.deletedCount == 0) throw new NotFoundError('failed to delete any records');
 
         //Give the results back.
@@ -61,7 +63,7 @@ module.exports = function(options) {
             throw validation.error;
 
         //Return the specific item
-        const result = await blacklist.findOne({ name: validation.value });
+        const result = await blacklist.findOne({ name: validation.value, version: DB_VERSION });
         if (result == null) throw new NotFoundError('failed to find any records with supplied name');
         res.send(result);
     });
@@ -79,11 +81,12 @@ module.exports = function(options) {
         const entry = {
             name,
             reason,
-            time: ~~(Date.now() / 1000)
+            version: DB_VERSION,
+            time: (new Date() / 1)
         };
 
         //Make sure the entry exists
-        if (await blacklist.findOne({ name: name }) !== null)
+        if (await blacklist.findOne({ name: name, version: DB_VERSION }) !== null)
             throw new ConflictError('Name already exists');
         
         //Upload the entry
