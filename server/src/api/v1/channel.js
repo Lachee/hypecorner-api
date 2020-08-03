@@ -1,8 +1,7 @@
-const Joi               = require('joi');
-const express           = require('express');
-const fileUpload        = require('express-fileupload');
-const NotFoundError     = require('../../http-errors').NotFoundError;
-const BadRequestError   = require('../../http-errors').BadRequestError;
+const Joi                                   = require('joi');
+const express                               = require('express');
+const fileUpload                            = require('express-fileupload');
+const { NotFoundError, BadRequestError }    = require('../../http-errors');
 
 const DB_VERSION = 2;
 
@@ -92,7 +91,7 @@ module.exports = function(options) {
         if (result == null) throw new NotFoundError('failed to find any channels with specified name');
 
         result.url = "https://twitch.tv/" + name;
-        if (bucket != null) result.thumbnail = "https://cdn.hypelight.tv/" + bucket
+        if (bucket != null) result.thumbnail = `https://${process.env.BUCKET_NAME}/${name}.jpg`;
         
         res.send(result);
     });
