@@ -1,9 +1,7 @@
 const Joi           = require('joi');
 const express       = require('express');
 
-const NotFoundError     = require('../../http-errors').NotFoundError;
-const BadRequestError   = require('../../http-errors').BadRequestError;
-const ConflictError     = require('../../http-errors').ConflictError;
+const { NotFoundError, ConflictError, BadRequestError} = require('../../http-errors');
 
 const EVENT_BLACKLIST_ADD       = 'BLACKLIST_ADD';
 const EVENT_BLACKLIST_REMOVE    = 'BLACKLIST_REMOVE';
