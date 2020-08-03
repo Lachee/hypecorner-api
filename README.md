@@ -1,5 +1,7 @@
 <img align="left" src="https://github.com/Lachee/hypecorner-api/blob/rewrite/client/public/favicon.png" width=256>
+
 # Hypecorner API - Orchestra
+
 This is the Orchestra that handles blacklisting and orchestration of channels. 
 
 Check out the HypeCorner Bot at [github.com/lachee/hypecorner](https://github.com/lachee/hypecorner)
@@ -7,7 +9,6 @@ Check out the HypeCorner Bot at [github.com/lachee/hypecorner](https://github.co
 Check out [HypeCorner.tv](https://hypecorner.tv), a live instance of this!
 
 .
-
 
 .
 
