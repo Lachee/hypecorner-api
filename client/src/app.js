@@ -16,7 +16,7 @@ orchestra.fetchCurrentChannel().then(async (channel) => {
     embed = new Twitch.Embed("twitch-embed", {
         channel: channel,
         layout: "video",
-        height: "100%",
+        height: "480px",
         width: "100%"
     });
 

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Hello Bulma!</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css">
+    </head>
+    <body>
+        <section class="hero">
+            <div class="twitch-player">
+                <div class='transition'>
+                    <span class="tile"></span>
+                    <span class="tile"></span>
+                    <span class="tile"></span>
+                    <span class="tile"></span>
+                    <span class="tile"></span>
+                    <span class="tile"></span>
+                </div>
+
+                <!-- Add a placeholder for the Twitch embed -->
+                <div id="twitch-embed"></div>
+                <script src="https://embed.twitch.tv/embed/v1.js"></script>
+
+                <!-- Woosh Effects -->
+                <audio attr="sound/ATTRIBUTION" id="audio-woosh" src="sound/woosh_short.wav"></audio>
+                <audio attr="sound/ATTRIBUTION" id="audio-woosh-reverse" src="sound/woosh_short_reverse.wav"></audio>
+            </div>
+        </section>
+        <section class="section">
+            <div class="notification">
+                <div class="level">
+                    <div class="columns">
+                        <div class="column is-one-quarter">
+                            <img src="https://cdn.hypecorner.tv/gluttonyr6.jpg">
+                        </div>
+                        <div class="column">
+                            <div class="container has-text-centered mb-2">
+                                <a href="https://twitch.tv/gluttonyr6" class="heading"><strong>gluttonyr6</strong></a>
+                            </div>
+                            <nav class="level is-mobile">
+                                <div class="level-item has-text-centered">
+                                  <div>
+                                    <p class="heading">Time Hosted</p>
+                                    <p class="title">6H ago</p>
+                                  </div>
+                                </div>
+                                <div class="level-item has-text-centered">
+                                  <div>
+                                    <p class="heading">Total Views</p>
+                                    <p class="title">15</p>
+                                  </div>
+                                </div>
+                                <div class="level-item has-text-centered">
+                                  <div>
+                                    <p class="heading">Duration</p>
+                                    <p class="title">5:00</p>
+                                  </div>
+                                </div>
+                                <div class="level-item has-text-centered">
+                                    <div>
+                                      <p class="heading">Score</p>
+                                      <p class="title">2 : 0</p>
+                                    </div>
+                                  </div>
+                              </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Finally include our app, so it can see all O.0 -->
+        <script src="dist/app.js"></script>
+    </body>
+</html>
